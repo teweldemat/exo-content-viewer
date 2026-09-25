@@ -29,6 +29,11 @@ function ensureWorker(): void {
  */
 const documentOptions = Object.freeze({ isEvalSupported: false, enableXfa: false }) as unknown as NonNullable<DocumentProps['options']>
 
+// Configure the worker as soon as this lazily loaded module is evaluated. React runs a child's
+// effects before its parent's, so react-pdf's <Document> would otherwise start loading before a
+// PdfView effect could set the worker and fail with "No GlobalWorkerOptions.workerSrc specified".
+ensureWorker()
+
 export function exceedsPdfCap(bytes: number | null | undefined): boolean {
   return bytes != null && bytes > PDF_MAX_BYTES
 }
@@ -44,6 +49,7 @@ export function PdfView({ source }: ContentRenderProps) {
   const tooLarge = exceedsPdfCap(source.bytes)
 
   useEffect(() => {
+    // Re-apply in case configurePdfWorker() was called after this module loaded.
     ensureWorker()
   }, [])
 

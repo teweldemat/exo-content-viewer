@@ -10,6 +10,12 @@ import { configurePdfWorker } from '../src/pdf-worker.js'
 
 installDom()
 
+test('pdf renderer configures the pdf.js worker when its module loads, before any document renders', () => {
+  // React runs child effects before parent effects, so the worker must be set at module evaluation
+  // time or react-pdf's <Document> starts loading first and fails with "No workerSrc specified".
+  assert.match(pdfjs.GlobalWorkerOptions.workerSrc, /pdf\.worker\.min\.mjs$/)
+})
+
 test('pdf renderer declines files above 50 MiB so the binary fallback offers a download', () => {
   assert.equal(pdfRenderer.maxBytes, 50 * 1024 * 1024)
   assert.equal(PDF_MAX_BYTES, pdfRenderer.maxBytes)
