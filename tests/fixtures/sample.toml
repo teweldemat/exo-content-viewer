@@ -1,0 +1,8 @@
+title = "TOML sample"
+
+[owner]
+name = "INTAPS"
+active = true
+
+[[servers]]
+host = "alpha"

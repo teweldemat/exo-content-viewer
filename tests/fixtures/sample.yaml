@@ -1,0 +1,6 @@
+service:
+  name: wumis
+  ports:
+    - 8080
+    - 8443
+enabled: true
