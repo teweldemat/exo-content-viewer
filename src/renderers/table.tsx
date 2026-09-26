@@ -5,6 +5,7 @@ import { filterRows, parseDelimited, sortRows, type SortDirection } from '../sha
 import { useSourceText } from '../shared/use-source-text.js'
 import { MIB, fileNameOf } from './matching.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export const TABLE_MAX_BYTES = 16 * MIB
 
@@ -37,11 +38,11 @@ export function TableView(props: ContentRenderProps & { text: string }) {
   }
   return (
     <div className="cv-table" data-delimiter={parsed.delimiter}>
-      <div className="cv-bar">
+      <RendererBar>
         <span className="cv-muted" data-cv-table-summary>Showing {visible.length.toLocaleString()} of {parsed.rows.length.toLocaleString()} rows</span>
         <span className="cv-muted">{columns} columns · {delimiterNames[parsed.delimiter] ?? JSON.stringify(parsed.delimiter)} delimited</span>
         {parsed.errors.length > 0 ? <span className="cv-error-text">{parsed.errors.length} parse warning{parsed.errors.length === 1 ? '' : 's'}</span> : null}
-      </div>
+      </RendererBar>
       <div className="cv-table-grid" role="table" aria-rowcount={parsed.rows.length}>
         <div className="cv-table-header" role="row" style={{ gridTemplateColumns }}>
           {parsed.header.map((name, column) => (

@@ -4,6 +4,7 @@ import type { DiffBlock, DiffFile, DiffLine } from 'diff2html/lib/types.js'
 import { ErrorNotice, LoadingNotice } from '../shared/notices.js'
 import { useSourceText } from '../shared/use-source-text.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export type DiffMode = 'line-by-line' | 'side-by-side'
 
@@ -164,13 +165,13 @@ export function DiffView(props: ContentRenderProps & { text: string; initialMode
   const files = useMemo(() => parseUnifiedDiff(text), [text])
   return (
     <div className={`cv-diff d2h-wrapper${colorMode === 'dark' ? ' d2h-dark-color-scheme' : ' d2h-light-color-scheme'}`} data-mode={mode}>
-      <div className="cv-bar">
+      <RendererBar>
         <div className="cv-button-group" role="group" aria-label="Diff layout">
           <button type="button" className="cv-button" aria-pressed={mode === 'line-by-line'} onClick={() => setMode('line-by-line')}>Line by line</button>
           <button type="button" className="cv-button" aria-pressed={mode === 'side-by-side'} onClick={() => setMode('side-by-side')}>Side by side</button>
         </div>
         <span className="cv-muted">{files.length} file{files.length === 1 ? '' : 's'}</span>
-      </div>
+      </RendererBar>
       {files.length === 0 ? <p className="cv-notice cv-muted">No hunks found in this diff.</p> : null}
       {files.map((file, index) => (
         <div key={index} className="d2h-file-wrapper" data-lang={file.language}>

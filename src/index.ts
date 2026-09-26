@@ -33,3 +33,4 @@ export type { ContentViewerProps, ContentViewerToolbar } from './ContentViewer.j
 
 export { configurePdfWorker } from './pdf-worker.js'
 export { sanitizeSchema } from './shared/sanitize-schema.js'
+export { RendererBar, RendererBarSlotContext } from './shared/renderer-bar.js'

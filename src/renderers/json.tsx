@@ -5,6 +5,7 @@ import { useSourceText } from '../shared/use-source-text.js'
 import { CodeView } from './code.js'
 import { MIB, extensionOf, mediaTypeOf } from './matching.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export const STRUCTURED_MAX_BYTES = 8 * MIB
 
@@ -61,11 +62,11 @@ export function StructuredView(props: StructuredViewProps) {
   }
   return (
     <div className="cv-structured" data-parse="ok">
-      <div className="cv-bar">
+      <RendererBar>
         <label className="cv-bar-toggle">
           <input type="checkbox" checked={raw} onChange={(event) => setRaw(event.target.checked)} /> Raw
         </label>
-      </div>
+      </RendererBar>
       {raw
         ? <CodeView source={props.source} colorMode={props.colorMode} onNavigate={props.onNavigate} text={text} />
         : <TreeView value={parsed.value} />}

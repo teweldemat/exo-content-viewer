@@ -1,5 +1,6 @@
 import { useState, type SyntheticEvent } from 'react'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export type ImageZoom = 'fit' | 1 | 2
 
@@ -17,14 +18,14 @@ export function ImageView({ source }: ContentRenderProps) {
     : natural ? { width: natural.width * zoom, height: natural.height * zoom, maxWidth: 'none' } : { transform: `scale(${zoom})`, transformOrigin: 'top left' }
   return (
     <div className="cv-image" data-zoom={String(zoom)}>
-      <div className="cv-bar">
+      <RendererBar>
         <div className="cv-button-group" role="group" aria-label="Zoom">
           {([['fit', 'Fit'], [1, '100%'], [2, '200%']] as const).map(([value, label]) => (
             <button key={String(value)} type="button" className="cv-button" aria-pressed={zoom === value} onClick={() => setZoom(value)}>{label}</button>
           ))}
         </div>
         {natural ? <span className="cv-muted" data-cv-natural-size>{natural.width} × {natural.height} px</span> : null}
-      </div>
+      </RendererBar>
       <div className="cv-image-stage cv-checkerboard">
         <img src={url} alt={source.name} style={style} onLoad={onLoad} draggable={false} />
       </div>

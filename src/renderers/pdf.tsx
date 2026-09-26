@@ -4,6 +4,7 @@ import { getConfiguredPdfWorkerUrl } from '../pdf-worker.js'
 import { formatBytes } from '../shared/format.js'
 import { MIB } from './matching.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export const PDF_MAX_BYTES = 50 * MIB
 
@@ -82,7 +83,7 @@ export function PdfView({ source }: ContentRenderProps) {
   const zoomIndex = zoomLevels.indexOf(scale)
   return (
     <div className="cv-pdf" data-page={page} data-scale={scale}>
-      <div className="cv-bar">
+      <RendererBar>
         <button type="button" className="cv-button" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page <= 1}>Previous</button>
         <span className="cv-muted" data-cv-pdf-pages>Page {page}{numPages ? ` of ${numPages}` : ''}</span>
         <button type="button" className="cv-button" onClick={() => setPage((current) => (numPages ? Math.min(numPages, current + 1) : current + 1))} disabled={numPages !== null && page >= numPages}>Next</button>
@@ -90,7 +91,7 @@ export function PdfView({ source }: ContentRenderProps) {
         <button type="button" className="cv-button" onClick={() => setScale(zoomLevels[Math.max(0, zoomIndex - 1)]!)} disabled={zoomIndex <= 0} aria-label="Zoom out">−</button>
         <span className="cv-muted">{Math.round(scale * 100)}%</span>
         <button type="button" className="cv-button" onClick={() => setScale(zoomLevels[Math.min(zoomLevels.length - 1, zoomIndex + 1)]!)} disabled={zoomIndex >= zoomLevels.length - 1} aria-label="Zoom in">+</button>
-      </div>
+      </RendererBar>
       <div className="cv-pdf-stage">
         <Document
           file={file}

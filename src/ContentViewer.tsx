@@ -1,4 +1,5 @@
 import { Component, Suspense, lazy, useMemo, useState, type ComponentType, type ErrorInfo, type LazyExoticComponent, type ReactNode } from 'react'
+import { RendererBarSlotContext } from './shared/renderer-bar.js'
 import { useColorScheme } from '@mui/material/styles'
 import { Download } from 'lucide-react'
 import type { ContentSource } from './content-source.js'
@@ -87,6 +88,9 @@ export function ContentViewer(props: ContentViewerProps) {
   const binaryRenderer = matched.find((renderer) => renderer.id === BINARY_RENDERER_ID) ?? null
 
   const select = (id: string) => setChoice({ source, id })
+  // Renderer controls (wrap, go-to-line, zoom, ...) are portaled into this slot so the viewer
+  // shows one toolbar row. Compact mode leaves file metadata and download to the host page.
+  const [barSlot, setBarSlot] = useState<HTMLElement | null>(null)
 
   if (!active) {
     return (
@@ -112,16 +116,18 @@ export function ContentViewer(props: ContentViewerProps) {
               </select>
             </label>
           ) : null}
+          <div className="cv-toolbar-slot" ref={setBarSlot} />
           <span className="cv-bar-spacer" />
           {toolbar === 'full' && meta ? <span className="cv-toolbar-meta cv-muted">{meta}</span> : null}
-          {downloadUrl ? (
+          {toolbar === 'full' && downloadUrl ? (
             <a className="cv-button cv-button-icon" href={downloadUrl} download={source.name} title={`Download ${source.name}`} aria-label={`Download ${source.name}`}>
               <Download size={16} />
-              {toolbar === 'full' ? <span>Download</span> : null}
+              <span>Download</span>
             </a>
           ) : null}
         </div>
       ) : null}
+      <RendererBarSlotContext.Provider value={toolbar === 'none' ? null : barSlot}>
       <div className="cv-body">
         <RendererErrorBoundary
           resetKey={`${active.id}`}
@@ -144,6 +150,7 @@ export function ContentViewer(props: ContentViewerProps) {
           </Suspense>
         </RendererErrorBoundary>
       </div>
+      </RendererBarSlotContext.Provider>
     </div>
   )
 }

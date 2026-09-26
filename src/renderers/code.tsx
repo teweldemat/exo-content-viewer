@@ -8,6 +8,7 @@ import { ErrorNotice, LoadingNotice } from '../shared/notices.js'
 import { useSourceText } from '../shared/use-source-text.js'
 import { fileNameOf } from './matching.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export type CodeViewProps = ContentRenderProps & { text: string }
 
@@ -102,7 +103,7 @@ export function CodeView(props: CodeViewProps) {
 
   return (
     <div className="cv-code-view" data-cv-code-mode={plain ? 'plain' : 'highlighted'} ref={containerRef}>
-      <div className="cv-bar">
+      <RendererBar>
         <span className="cv-muted">{lines.length.toLocaleString()} line{lines.length === 1 ? '' : 's'}{language ? ` · ${language}` : ''}{plain ? ' · large file, plain view' : ''}</span>
         <label className="cv-bar-toggle">
           <input type="checkbox" checked={wrap} onChange={(event) => setWrap(event.target.checked)} /> Wrap
@@ -123,7 +124,7 @@ export function CodeView(props: CodeViewProps) {
         <button type="button" className="cv-button cv-button-icon" onClick={copy} aria-label="Copy contents" title="Copy contents">
           {copied ? <Check size={14} /> : <Copy size={14} />}
         </button>
-      </div>
+      </RendererBar>
       {plain
         ? <PlainLines lines={lines} wrap={wrap} selection={selection} onLineClick={onLineClick} />
         : <CodeBlock code={text} language={language} colorMode={colorMode} lineNumbers wrap={wrap} selection={selection} onLineClick={onLineClick} />}

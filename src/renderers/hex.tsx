@@ -5,6 +5,7 @@ import { ErrorNotice, LoadingNotice } from '../shared/notices.js'
 import { useSourceBytes } from '../shared/use-source-text.js'
 import { MIB } from './matching.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 export const HEX_MAX_BYTES = 1 * MIB
 
@@ -13,11 +14,11 @@ export function HexView({ bytes }: { bytes: Uint8Array }) {
   const truncated = bytes.length > HEX_DUMP_LIMIT
   return (
     <div className="cv-hex">
-      <div className="cv-bar">
+      <RendererBar>
         <span className="cv-muted">
           {truncated ? `Showing the first ${formatBytes(HEX_DUMP_LIMIT)} of ${formatBytes(bytes.length)}` : `${formatBytes(bytes.length) || '0 B'}`}
         </span>
-      </div>
+      </RendererBar>
       <pre className="cv-hex-dump">{dump}</pre>
     </div>
   )

@@ -1,6 +1,6 @@
 {
   "name": "cp-content-viewer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Rich, extensible content viewer for Exoscient control panels.",
   "type": "module",
   "license": "UNLICENSED",

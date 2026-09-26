@@ -41,6 +41,7 @@ test('ContentViewer honors initialRendererId, custom renderers and the toolbar m
   await rendered.waitFor(() => rendered.container.querySelector('.shout'))
   assert.equal(rendered.container.querySelector('.cv-root')?.getAttribute('data-renderer'), 'shout', 'custom renderer wins the tie with the built-in')
   assert.ok(!rendered.container.querySelector('.cv-toolbar-label'), 'compact toolbar has no label')
+  assert.ok(!rendered.container.querySelector('.cv-toolbar a[download]'), 'compact toolbar leaves download to the host page')
   assert.ok(rendered.container.querySelector('select[aria-label="View as"]'))
   await rendered.unmount()
 
@@ -99,5 +100,17 @@ test('ContentViewer falls through to the binary view when nothing else accepts t
   await rendered.waitFor(() => rendered.container.querySelector('.cv-binary'))
   assert.ok(!rendered.container.querySelector('select[aria-label="View as"]'), 'a single match shows no menu')
   assert.equal(rendered.container.querySelector('.cv-toolbar-label')?.textContent, 'File')
+  await rendered.unmount()
+})
+
+test('renderer controls are portaled into the single viewer toolbar row', async () => {
+  const source = createStaticContentSource({ name: 'a.ts', mediaType: 'text/plain', textual: true, text: 'const a = 1\n' })
+  const rendered = await renderClient(<ContentViewer source={source} initialRendererId="code" colorMode="light" toolbar="compact" />)
+  await rendered.waitFor(() => rendered.container.querySelector('.cv-code-view'))
+  await rendered.waitFor(() => /Wrap/.test(rendered.container.querySelector('.cv-toolbar .cv-toolbar-slot')?.textContent ?? ''))
+  const slot = rendered.container.querySelector('.cv-toolbar .cv-toolbar-slot')!
+  assert.match(slot.textContent ?? '', /Wrap/, 'code controls render inside the toolbar slot')
+  assert.ok(!rendered.container.querySelector('.cv-body .cv-bar'), 'no second bar stacks above the content')
+  assert.equal(rendered.container.querySelectorAll('.cv-toolbar').length, 1)
   await rendered.unmount()
 })

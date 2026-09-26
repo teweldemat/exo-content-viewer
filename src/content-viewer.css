@@ -63,7 +63,9 @@
   border-bottom: 1px solid var(--cv-border);
   background: var(--cv-bg);
 }
-.cv-toolbar-compact { padding: 4px 8px; }
+.cv-toolbar-compact { padding: 3px 8px; font-size: 12.5px; }
+.cv-toolbar-slot { display: contents; }
+.cv-toolbar-compact .cv-select, .cv-toolbar-compact .cv-input, .cv-toolbar-compact .cv-button { padding-top: 2px; padding-bottom: 2px; font-size: 12.5px; }
 .cv-toolbar-label { font-weight: 600; }
 .cv-toolbar-viewas { display: inline-flex; align-items: center; gap: 6px; }
 .cv-toolbar-viewas-text { color: var(--cv-fg-muted); font-size: 12px; }

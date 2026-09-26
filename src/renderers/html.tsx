@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import CodeRenderer from './code.js'
 import type { ContentRenderProps } from './types.js'
+import { RendererBar } from '../shared/renderer-bar.js'
 
 /**
  * HTML is shown in a fully sandboxed iframe (`sandbox=""`, no same-origin, no scripts) loaded from the
@@ -12,12 +13,12 @@ export function HtmlView(props: ContentRenderProps) {
   const [showSource, setShowSource] = useState(url === null)
   return (
     <div className="cv-html" data-view={showSource ? 'source' : 'preview'}>
-      <div className="cv-bar">
+      <RendererBar>
         <label className="cv-bar-toggle">
           <input type="checkbox" checked={showSource} onChange={(event) => setShowSource(event.target.checked)} disabled={url === null} /> View source
         </label>
         <span className="cv-muted">{url === null ? 'No preview URL; showing source.' : 'Sandboxed preview: scripts, forms and navigation are disabled.'}</span>
-      </div>
+      </RendererBar>
       {showSource || url === null
         ? <CodeRenderer {...props} />
         : <iframe className="cv-html-frame" sandbox="" src={url} title={source.name} referrerPolicy="no-referrer" loading="lazy" />}
