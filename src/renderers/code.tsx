@@ -9,6 +9,7 @@ import { useSourceText } from '../shared/use-source-text.js'
 import { fileNameOf } from './matching.js'
 import type { ContentRenderProps } from './types.js'
 import { RendererBar } from '../shared/renderer-bar.js'
+import { rememberCodeWrap, rememberedCodeWrap } from '../shared/preferences.js'
 
 export type CodeViewProps = ContentRenderProps & { text: string }
 
@@ -77,7 +78,12 @@ export function CodeView(props: CodeViewProps) {
   const lines = useMemo(() => splitLines(text), [text])
   const plain = shouldUsePlainView(text, source.bytes, lines.length)
   const language = useMemo(() => resolveLanguage(fileNameOf(source)), [source])
-  const [wrap, setWrap] = useState(false)
+  // The wrap choice is remembered across files and sessions.
+  const [wrap, setWrapState] = useState(() => rememberedCodeWrap())
+  const setWrap = (value: boolean) => {
+    setWrapState(value)
+    rememberCodeWrap(value)
+  }
   const [selection, select] = useLineSelection()
   const [gotoValue, setGotoValue] = useState('')
   const [copied, setCopied] = useState(false)
