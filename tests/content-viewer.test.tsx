@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict'
-import { test } from 'node:test'
+import { beforeEach, test } from 'node:test'
 import { installDom, renderClient, changeValue, click } from './helpers/dom.js'
 import { fixtureSource } from './helpers/fixtures.js'
 import { ContentViewer } from '../src/ContentViewer.js'
 import { createStaticContentSource, type ContentSource } from '../src/content-source.js'
 import type { ContentRenderer } from '../src/renderers/types.js'
+import { clearPreferences } from '../src/shared/preferences.js'
 
 installDom()
+
+// Renderer choices persist per content type; each test starts from a clean slate.
+beforeEach(() => clearPreferences())
 
 test('ContentViewer picks the best renderer, lists every match in "View as" and switches on change', async () => {
   const source = fixtureSource('frontmatter.md', { mediaType: 'text/markdown', url: (options) => (options?.download ? '/download/frontmatter.md' : null) })
@@ -51,17 +55,27 @@ test('ContentViewer honors initialRendererId, custom renderers and the toolbar m
   await initial.unmount()
 })
 
-test('ContentViewer resets the chosen renderer when the source changes', async () => {
+test('ContentViewer remembers the chosen renderer per content type and resets for other types', async () => {
+  clearPreferences()
   const first = fixtureSource('frontmatter.md')
-  const second = createStaticContentSource({ name: 'other.md', text: '# other' })
+  const sameType = createStaticContentSource({ name: 'other.md', text: '# other' })
+  const otherType = createStaticContentSource({ name: 'notes.txt', text: 'plain' })
   const rendered = await renderClient(<ContentViewer source={first} colorMode="light" />)
   await rendered.waitFor(() => rendered.container.querySelector('.cv-markdown'))
   changeValue(rendered.container.querySelector<HTMLSelectElement>('select[aria-label="View as"]')!, 'code')
   await rendered.waitFor(() => rendered.container.querySelector('.cv-code-view'))
-  await (async () => { await rendered.flush(); rendered.root.render(<ContentViewer source={second} colorMode="light" />) })()
+  await (async () => { await rendered.flush(); rendered.root.render(<ContentViewer source={sameType} colorMode="light" />) })()
+  await rendered.waitFor(() => rendered.container.querySelector('.cv-code-view'))
+  assert.equal(rendered.container.querySelector('.cv-root')?.getAttribute('data-renderer'), 'code', 'another .md file opens with the remembered renderer')
+  await (async () => { await rendered.flush(); rendered.root.render(<ContentViewer source={otherType} colorMode="light" initialRendererId="hex" />) })()
+  await rendered.waitFor(() => rendered.container.querySelector('.cv-hex'))
+  assert.equal(rendered.container.querySelector('.cv-root')?.getAttribute('data-renderer'), 'hex', 'a type without a remembered choice honors initialRendererId')
+  // A fresh source object: an explicit in-session choice for the same object always wins.
+  await (async () => { await rendered.flush(); rendered.root.render(<ContentViewer source={fixtureSource('frontmatter.md')} colorMode="light" rememberChoices={false} />) })()
   await rendered.waitFor(() => rendered.container.querySelector('.cv-markdown'))
-  assert.equal(rendered.container.querySelector('.cv-root')?.getAttribute('data-renderer'), 'markdown')
+  assert.equal(rendered.container.querySelector('.cv-root')?.getAttribute('data-renderer'), 'markdown', 'rememberChoices=false ignores stored choices')
   await rendered.unmount()
+  clearPreferences()
 })
 
 test('ContentViewer catches renderer errors and offers plain text and binary escapes', async () => {

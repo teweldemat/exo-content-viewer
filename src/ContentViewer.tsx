@@ -6,6 +6,7 @@ import type { ContentSource } from './content-source.js'
 import { BINARY_RENDERER_ID, selectRenderers, type ColorMode, type ContentRenderProps, type ContentRenderer } from './renderers/types.js'
 import { mergeRenderers } from './renderers/builtin.js'
 import { formatBytes } from './shared/format.js'
+import { rememberRendererFor, rememberedRendererFor } from './shared/preferences.js'
 
 export type ContentViewerToolbar = 'full' | 'compact' | 'none'
 
@@ -20,6 +21,12 @@ export type ContentViewerProps = {
   onNavigate?: (target: ContentSource | string) => void
   toolbar?: ContentViewerToolbar
   className?: string
+  /**
+   * Remember the renderer the user picks per content type (file extension, else media type)
+   * in browser storage and reopen files of that type with it. Defaults to true; a remembered
+   * choice wins over `initialRendererId`.
+   */
+  rememberChoices?: boolean
 }
 
 const lazyComponents = new WeakMap<ContentRenderer, LazyExoticComponent<ComponentType<ContentRenderProps>>>()
@@ -76,18 +83,23 @@ class RendererErrorBoundary extends Component<BoundaryProps, BoundaryState> {
  * every renderer that accepts the source.
  */
 export function ContentViewer(props: ContentViewerProps) {
-  const { source, initialRendererId, onNavigate, toolbar = 'full', className } = props
+  const { source, initialRendererId, onNavigate, toolbar = 'full', className, rememberChoices = true } = props
   const colorMode = useResolvedColorMode(props.colorMode)
   const renderers = useMemo(() => mergeRenderers(props.renderers), [props.renderers])
   const matched = useMemo(() => selectRenderers(source, renderers), [source, renderers])
   const [choice, setChoice] = useState<{ source: ContentSource; id: string } | null>(null)
-  const requestedId = choice && choice.source === source ? choice.id : initialRendererId
+  const remembered = useMemo(() => (rememberChoices ? rememberedRendererFor(source) : null), [rememberChoices, source])
+  const rememberedMatches = remembered !== null && matched.some((renderer) => renderer.id === remembered)
+  const requestedId = choice && choice.source === source ? choice.id : rememberedMatches ? remembered : initialRendererId
   const active = matched.find((renderer) => renderer.id === requestedId) ?? matched[0] ?? null
   const downloadUrl = source.url({ download: true })
   const codeRenderer = matched.find((renderer) => renderer.id === 'code') ?? null
   const binaryRenderer = matched.find((renderer) => renderer.id === BINARY_RENDERER_ID) ?? null
 
-  const select = (id: string) => setChoice({ source, id })
+  const select = (id: string) => {
+    setChoice({ source, id })
+    if (rememberChoices) rememberRendererFor(source, id)
+  }
   // Renderer controls (wrap, go-to-line, zoom, ...) are portaled into this slot so the viewer
   // shows one toolbar row. Compact mode leaves file metadata and download to the host page.
   const [barSlot, setBarSlot] = useState<HTMLElement | null>(null)

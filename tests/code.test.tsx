@@ -6,6 +6,7 @@ import { createStaticContentSource } from '../src/content-source.js'
 import CodeRenderer, { CodeView } from '../src/renderers/code.js'
 import { formatLineHash, parseLineHash, shouldUsePlainView } from '../src/shared/code-helpers.js'
 import { resolveLanguage } from '../src/shared/highlighter.js'
+import { clearPreferences } from '../src/shared/preferences.js'
 
 installDom()
 
@@ -70,4 +71,23 @@ test('code helpers parse line hashes and map file names to grammars', () => {
   assert.equal(resolveLanguage('a/b/script.py'), 'python')
   assert.equal(resolveLanguage('mermaid'), 'mermaid')
   assert.equal(resolveLanguage('notes.unknownext'), null)
+})
+
+test('the wrap toggle is remembered across files and sessions', async () => {
+  clearPreferences()
+  const first = await renderClient(<CodeView text={readFixture('sample.ts')} source={fixtureSource('sample.ts')} colorMode="light" />)
+  const toggle = first.container.querySelector<HTMLInputElement>('.cv-bar-toggle input')!
+  assert.equal(toggle.checked, false)
+  assert.ok(!first.container.querySelector('.cv-code-wrap'))
+  toggle.click()
+  await first.flush()
+  assert.equal(toggle.checked, true)
+  assert.ok(first.container.querySelector('.cv-code-wrap'))
+  await first.unmount()
+
+  const second = await renderClient(<CodeView text="a\nb" source={createStaticContentSource({ name: 'other.txt', text: 'a\nb' })} colorMode="light" />)
+  assert.equal(second.container.querySelector<HTMLInputElement>('.cv-bar-toggle input')?.checked, true, 'a new file opens with the remembered wrap')
+  assert.ok(second.container.querySelector('.cv-code-wrap'))
+  await second.unmount()
+  clearPreferences()
 })
